@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert'; // Ensure this imports your Blog, Author, and Category classes
 import '../blogs/model.dart';
 import 'sign_in_screen.dart'; // Import your SignInScreen
+import 'detail_screen.dart'; // Import your DetailScreen
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ],
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Color(0xFF0E1217),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -153,71 +154,80 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     post.getFormattedDate(), // Formatted date
                     post.title, // Content of the post
                     post.thumbnail, // Post image URL
-                    post.author.profileUrl // Author's profile URL
+                    post.author.profileUrl, // Author's profile URL
+                    post // Pass the entire post object
                   );
                 },
               );
   }
 
-  Widget _buildPostCard(String username, String location, String content, String imagePath, String profileUrl) {
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(profileUrl), // Replace with user's avatar
-            ), // Replace with user's avatar
-            title: Text(username),
-            subtitle: Text(location),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Text(content, style: TextStyle(fontSize: 16)),
-          ),
-          Image.network(
-            imagePath,
-            errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-              return const Icon(Icons.error); // Display an error icon if the image fails to load
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isFavorited = !_isFavorited;
-                    });
-                  },
-                  icon: Icon(
-                    _isFavorited ? Icons.favorite : Icons.favorite_border,
-                    color: _isFavorited ? Colors.red : Colors.white,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.comment),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.share),
-                ),
-                Spacer(),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.bookmark_border),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.link),
-                ),
-              ],
+  Widget _buildPostCard(String username, String location, String content, String imagePath, String profileUrl, Blog post) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DetailScreen(post: post)), // Navigate to DetailScreen
+        );
+      },
+      child: Card(
+        margin: EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage(profileUrl), // Replace with user's avatar
+              ), // Replace with user's avatar
+              title: Text(username),
+              subtitle: Text(location),
             ),
-          )
-        ],
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(content, style: TextStyle(fontSize: 16)),
+            ),
+            Image.network(
+              imagePath,
+              errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                return const Icon(Icons.error); // Display an error icon if the image fails to load
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isFavorited = !_isFavorited;
+                      });
+                    },
+                    icon: Icon(
+                      _isFavorited ? Icons.favorite : Icons.favorite_border,
+                      color: _isFavorited ? Colors.red : Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.comment),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.share),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.bookmark_border),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.link),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

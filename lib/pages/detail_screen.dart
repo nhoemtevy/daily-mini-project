@@ -1,40 +1,33 @@
 import 'package:dailydev/pages/sign_in_screen.dart';
 import 'package:flutter/material.dart';
+import '../blogs/model.dart';
+import 'home_screen.dart'; // Import HomeScreen
 
-void main() {
-  runApp(MyApp());
-}
+class DetailScreen extends StatefulWidget {
+  final Blog post;
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      home: HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  DetailScreen({required this.post});
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-  }
+  _DetailScreenState createState() => _DetailScreenState();
+}
 
+class _DetailScreenState extends State<DetailScreen> {
   int _selectedIndex = 0;
+  bool _isFavorited = false; // Declare the _isFavorited variable
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 0) {
+      // Navigate to HomeScreen when 'Home' tab is tapped
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
@@ -59,94 +52,89 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ],
         ),
-
       ),
-      body: ListView(
-        children: [
-          _buildPostCard(
-            "How To Design UI",
-            "Microfrontend architecture allows independent frontend pieces to be developed by separate teams and integrated into a complete system, enabling faster releases and reduced complexity. The post explores nine integration patterns, such as Micro Apps, iFrames, App Shell, and Module Federation, highlighting their strengths and weaknesses.",
-            'assets/images/img2.png', // Sample post image path
-          ),
-          _buildPostCard(
-            "Microservice architecture vs modular architecture",
-            "This post compares the two approaches for breaking down complex systems. Microservices provide loosely coupled services, while modular architectures help in isolating different functionalities within the same app.",
-            'assets/images/img4.png', // Sample post image path
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'Add',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper function to build a post card
-  Widget _buildPostCard(String title, String content, String imagePath) {
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            title: Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.post.title,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Text(
-              content,
+            SizedBox(height: 8),
+            Text(
+              'By ${widget.post.author.username} on ${widget.post.getFormattedDate()}',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            SizedBox(height: 16),
+            Text(
+              widget.post.content,
               style: TextStyle(fontSize: 16),
             ),
-          ),
-          Image.asset(imagePath), // Post image
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.favorite_border),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.comment),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.share),
-                ),
-                Spacer(),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.bookmark_border),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.link),
-                ),
-              ],
+            SizedBox(height: 16),
+            Image.network(widget.post.thumbnail),
+            SizedBox(height: 16),
+            Container(
+            color: Color(0xFF0E1217), // Set your desired background color here
+            child: Padding(
+              padding: const EdgeInsets.all(0.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isFavorited = !_isFavorited;
+                      });
+                    },
+                    icon: Icon(
+                      _isFavorited ? Icons.favorite : Icons.favorite_border,
+                      color: _isFavorited ? Colors.red : Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.comment),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.share),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.bookmark_border),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.link),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          )
+          ],
+        ),
       ),
+     bottomNavigationBar: BottomNavigationBar(
+  currentIndex: _selectedIndex,
+  onTap: _onItemTapped,
+  backgroundColor: Colors.black, // Set your desired background color here
+  items: const <BottomNavigationBarItem>[
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.add_circle_outline),
+      label: 'Add',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.search), // Explore icon
+      label: 'Explore',
+    ),
+  ],
+),
     );
   }
 }
