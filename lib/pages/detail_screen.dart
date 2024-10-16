@@ -2,6 +2,7 @@ import 'package:dailydev/pages/sign_in_screen.dart';
 import 'package:flutter/material.dart';
 import '../blogs/model.dart';
 import 'home_screen.dart'; // Import HomeScreen
+import 'search_screen.dart'; // Import SearchScreen
 
 class DetailScreen extends StatefulWidget {
   final Blog post;
@@ -22,6 +23,12 @@ class _DetailScreenState extends State<DetailScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else if (index == 2) {
+      // Navigate to SearchScreen when 'Explore' tab is tapped
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SearchScreen()),
       );
     } else {
       setState(() {
@@ -117,23 +124,23 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
       ),
      bottomNavigationBar: BottomNavigationBar(
-  currentIndex: _selectedIndex,
-  onTap: _onItemTapped,
-  backgroundColor: Colors.black, // Set your desired background color here
-  items: const <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.add_circle_outline),
-      label: 'Add',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.search), // Explore icon
-      label: 'Explore',
-    ),
-  ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        backgroundColor: Colors.black, // Set your desired background color here
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            label: 'Add',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search), // Explore icon
+            label: 'Explore',
+          ),
+        ],
 ),
     );
   }
