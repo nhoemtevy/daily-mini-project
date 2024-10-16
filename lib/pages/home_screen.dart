@@ -1,6 +1,8 @@
+import 'dart:io';
+import 'package:dailydev/pages/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';// Ensure this imports your Blog, Author, and Category classes
+import 'dart:convert'; // Ensure this imports your Blog, Author, and Category classes
 import '../blogs/model.dart';
 import 'sign_in_screen.dart'; // Import your SignInScreen
 
@@ -14,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   int _selectedIndex = 0;
   List<Blog> _posts = []; // Store fetched Blog objects
   bool _isLoading = true; // Loading state
+  bool _isFavorited = false; // Add this line
 
   @override
   void initState() {
@@ -27,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       // Navigate to SearchScreen when 'Explore' tab is tapped
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const SearchBar()),
+        MaterialPageRoute(builder: (context) => SearchScreen()), // Navigate to SearchScreen
       );
     } else {
       setState(() {
@@ -37,20 +40,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  // Fetch data from the API
   Future<void> fetchPosts() async {
     try {
       final response = await http.get(Uri.parse('https://blog-api.automatex.dev/blogs'));
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        // Print the raw JSON response for debugging
+        print('Raw API response: $jsonData');
+
         setState(() {
           // Map the JSON response to a List of Blog objects
-          _posts = jsonData.map((json) => Blog.fromJson(json)).toList();
+          _posts = (jsonData['blogs'] as List<dynamic>).map((json) => Blog.fromJson(json)).toList();
           _isLoading = false; // Stop loading
+
+          // Print the mapped posts to verify the content
+          _posts.forEach((post) {
+            print('Blog post: ${post.title}, Author: ${post.author.username}');
+          });
         });
       } else {
-        throw Exception('Failed to load posts');
+        throw Exception('Failed to load posts: Status Code ${response.statusCode}');
       }
     } catch (e) {
       // Handle errors here,
@@ -128,34 +139,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  // Helper function to build post feed content
   Widget _buildPostFeed() {
     return _isLoading
         ? Center(child: CircularProgressIndicator()) // Show a loading indicator
         : _posts.isEmpty
-        ? Center(child: Text("No posts available.")) // Handle empty posts
-        : SingleChildScrollView(
-      child: Column(
-        children: _posts.map((post) {
-          return _buildPostCard(
-            post.author.username, // Author's username
-            "Location", // Static location or dynamic if available
-            post.content, // Content of the post
-            post.thumbnail, // Post image URL
-          );
-        }).toList(),
-      ),
-    );
+            ? Center(child: Text("No posts available.")) // Handle empty posts
+            : ListView.builder(
+                itemCount: _posts.length,
+                itemBuilder: (context, index) {
+                  final post = _posts[index];
+                  return _buildPostCard(
+                    post.author.username, // Author's username
+                    post.getFormattedDate(), // Formatted date
+                    post.title, // Content of the post
+                    post.thumbnail, // Post image URL
+                    post.author.profileUrl // Author's profile URL
+                  );
+                },
+              );
   }
 
-  Widget _buildPostCard(String username, String location, String content, String imagePath) {
+  Widget _buildPostCard(String username, String location, String content, String imagePath, String profileUrl) {
     return Card(
       margin: EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            leading: CircleAvatar(child: Icon(Icons.person)), // Replace with user's avatar
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(profileUrl), // Replace with user's avatar
+            ), // Replace with user's avatar
             title: Text(username),
             subtitle: Text(location),
           ),
@@ -174,8 +187,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.favorite_border),
+                  onPressed: () {
+                    setState(() {
+                      _isFavorited = !_isFavorited;
+                    });
+                  },
+                  icon: Icon(
+                    _isFavorited ? Icons.favorite : Icons.favorite_border,
+                    color: _isFavorited ? Colors.red : Colors.white,
+                  ),
                 ),
                 IconButton(
                   onPressed: () {},
@@ -196,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
               ],
             ),
-          ),
+          )
         ],
       ),
     );

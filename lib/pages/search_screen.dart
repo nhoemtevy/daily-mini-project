@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(SearchScreen());
+}
 class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Search'),
-        backgroundColor: Colors.grey[950],
+        backgroundColor: Colors.grey[900], // Darker shade for the app bar
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -17,58 +20,62 @@ class SearchScreen extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search',
                 filled: false, // Remove background color
-                // Add border with color
+                contentPadding: EdgeInsets.symmetric(vertical: 12.0), // Adjust height
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
                   borderSide: BorderSide(
-                    color: Colors.grey, // Border color
-                    width: 1.5, // Border width
+                    color: Colors.grey[600]!, // Darker border for consistency
+                    width: 1.5,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
                   borderSide: BorderSide(
-                    color: Colors.grey, // Border color when focused
-                    width: 1.0, // Border width when focused
+                    color: Colors.grey[400]!, // Lighter when focused
+                    width: 1.5,
                   ),
                 ),
-                prefixIcon: Icon(Icons.search, color: Colors.grey), // Search icon
+                prefixIcon: Icon(Icons.search, color: Colors.grey[500]), // Search icon
               ),
               style: TextStyle(color: Colors.grey[700]), // Text color
               cursorColor: Colors.grey[500], // Cursor color
             ),
-            SizedBox(height: 20,),
+            SizedBox(height: 20),
+            // Filter chips
             Row(
               children: [
-
                 FilterChip(
-
-                  label: Text('Education', style: TextStyle(color: Colors.grey[500])),
+                  label: Text('Education', style: TextStyle(color: Colors.grey[300])), // Light text for better contrast
                   selected: false,
-                  backgroundColor: Colors.grey[950],
-                  selectedColor: Colors.grey,
+                  backgroundColor: Colors.grey[850], // Match the background theme
+                  selectedColor: Colors.grey[700], // Color when selected
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                  ),
                   onSelected: (bool selected) {
                     // Handle filter logic here
                   },
                 ),
-                const SizedBox(height: 20, width: 20,),
+                SizedBox(width: 10), // Adjust spacing between chips
+                FilterChip(
+                  label: Text('Technology', style: TextStyle(color: Colors.grey[300])),
+                  selected: false,
+                  backgroundColor: Colors.grey[850],
+                  selectedColor: Colors.grey[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  onSelected: (bool selected) {
+                    // Handle filter logic here
+                  },
+                ),
               ],
             ),
             SizedBox(height: 20),
             // Add your search results widget here
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Search results will appear here.',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
           ],
         ),
       ),
-
-      backgroundColor: Colors.grey[950], // Background color of the screen
     );
   }
 }
