@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:dailydev/pages/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Ensure this imports your Blog, Author, and Category classes
@@ -17,9 +15,11 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
   late TabController _tabController;
   int _selectedIndex = 0;
   List<Blog> _posts = []; // Store fetched Blog objects
+  List<Blog> _suggestions = []; // Store search suggestions
   bool _isLoading = true; // Loading state
   bool _isFavorited = false; // Add this line
   List<Category> _categories = [];  // Add this line
+  TextEditingController _searchController = TextEditingController(); // Add a controller for the search field
 
   @override
   void initState() {
@@ -50,10 +50,12 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
     }
   }
 
-  Future<void> fetchPosts([String? categoryId]) async {
+  Future<void> fetchPosts({String? categoryId, String? query}) async {
     String url = 'https://blog-api.automatex.dev/blogs';
     if (categoryId != null) {
       url += '?category_id=$categoryId';
+    } else if (query != null && query.isNotEmpty) {
+      url += '?title=$query';
     }
 
     print('Fetching posts from URL: $url'); // Print the URL
@@ -70,6 +72,7 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
         setState(() {
           // Map the JSON response to a List of Blog objects
           _posts = (jsonData['blogs'] as List<dynamic>).map((json) => Blog.fromJson(json)).toList();
+          _suggestions = _posts; // Update suggestions with the fetched posts
           _isLoading = false; // Stop loading
 
           // Print the mapped posts to verify the content
@@ -129,6 +132,7 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
           children: [
             // Search bar
             TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search',
                 filled: false, // Remove background color
@@ -149,8 +153,11 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
                 ),
                 prefixIcon: Icon(Icons.search, color: Colors.grey), // Search icon
               ),
-              style: TextStyle(color: Colors.grey[700]), // Text color
+              style: TextStyle(color: Colors.grey[950]), // Text color
               cursorColor: Colors.grey[500], // Cursor color
+              onChanged: (query) {
+                fetchPosts(query: query); // Fetch posts based on the search query
+              },
             ),
             SizedBox(height: 20,),
             SingleChildScrollView(
@@ -165,8 +172,8 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
                       backgroundColor: Colors.grey[950],
                       selectedColor: Colors.grey,
                       onSelected: (bool selected) {
-                        // Fetch posts for the selected category
-                        fetchPosts(category.id);
+                        // Fetch posts for the selected category and current search query
+                        fetchPosts(categoryId: category.id, query: _searchController.text);
                       },
                     ),
                   );
@@ -174,8 +181,25 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
               ),
             ),
             SizedBox(height: 20),
-            // Add your search results widget here
-            Expanded(child: _buildTabBarView()), // Keep this body property
+            // Display search suggestions
+            Expanded(
+              child: _suggestions.isEmpty
+                  ? Center(child: Text("No suggestions available."))
+                  : ListView.builder(
+                      itemCount: _suggestions.length,
+                      itemBuilder: (context, index) {
+                        final suggestion = _suggestions[index];
+                        return _buildPostCard(
+                          suggestion.author.username, // Author's username
+                          suggestion.getFormattedDate(), // Formatted date
+                          suggestion.title, // Content of the post
+                          suggestion.thumbnail, // Post image URL
+                          suggestion.author.profileUrl, // Author's profile URL
+                          suggestion // Pass the entire post object
+                        );
+                      },
+                    ),
+            ),
           ],
         ),
       ),
@@ -197,18 +221,6 @@ class _SearchScreen extends State<SearchScreen> with SingleTickerProviderStateMi
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildTabBarView() {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        _buildPostFeed(), // Content for 'For you'
-        _buildTagsFeed(), // Content for 'Tags'
-        _buildBookmarksFeed(), // Content for 'Bookmarks'
-        _buildHistoryFeed(), // Content for 'History'
-      ],
     );
   }
 
